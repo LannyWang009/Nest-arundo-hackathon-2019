@@ -21,53 +21,68 @@ import {
 
 const Dashboard = () => {
   const [data, setData] = useState([])
-  const [dateText, setDateText] = useState('')
-  const [intvText, setIntvText] = useState('')
-  const [date, setDate] = useState('2018-11-01')
-  const [intv, setIntv] = useState(2)
+  // const [dateText, setDateText] = useState('')
+  // const [intvText, setIntvText] = useState('') 
+  const [startDateText, setStartDateText] = useState('')
+  const [endDateText, setEndDateText] = useState('')
+  const [startDate, setStartDate] = useState('2018-11-01')
+  const [endDate, setEndDate] = useState('2018-12-01')
+  // const [date, setDate] = useState('2018-11-01')
+  // const [intv, setIntv] = useState(2)
 
   const refDate = React.createRef
 
   useEffect(() => {
-    date
+    startDate
     getData()
-  }, [date])
+  }, [startDate])
+  useEffect(() => {
+    endDate
+    getData()
+  }, [endDate])
 
   const getData = async () => {
     try{
-      const res = await axios.get(`http://localhost:3000/api/daily?date=${moment(date).format('YYYY/MM/DD')}&interval=${intv}`)
-      setData(res.data)
+      const res = await axios.get(`http://localhost:3000/api/thermostat?startDate=${moment(startDate).format('YYYY/MM/DD')}&endDate=${moment(endDate).format('YYYY/MM/DD')}`)
+      
+      let useData = res.data.map(item=>{
+        return {...item, date:item.time.split(' ')[0], time:item.time.split(' ')[1]}
+      })
+      console.log('useData', useData)
+      setData(useData)
     } catch (err) {
       setData([])
     }
   }
 
+
   return (
     <DashboardContainer>
       <TitleContainer>
         <TitleBoard>
-          <h3>Daily Temperature From an Indoor Thermostat</h3>
+          
           <div>
-            <button onClick={() => { setDate(moment(date).add(-7, 'days').format('YYYY-MM-DD')) }} >
-              {'<<'}
-            </button>
-            <button onClick={() => { setDate(moment(date).add(-1, 'days').format('YYYY-MM-DD')) }} >
-              {'<'}
-            </button>
+          <h3>Nest Home Climate Control Data</h3>
+          <div>
+            start date:
             <input
-              type="date"
-              value={date}
+              type='date'
+              value={startDate}
               onChange={e => {
-                setDate(e.target.value)
+                setStartDate(e.target.value)
                 getData()
               }}
             />
-            <button onClick={() => { setDate(moment(date).add(1, 'days').format('YYYY-MM-DD')) }} >
-              >
-            </button>
-            <button onClick={() => { setDate(moment(date).add(7, 'days').format('YYYY-MM-DD')) }} >
-              >>
-            </button>
+            end date:
+            <input
+              type='date'
+              value={endDate}
+              onChange={e => {
+                setEndDate(e.target.value)
+                getData()
+              }}
+            />
+          </div>
           </div>
         </TitleBoard>
         <div>
@@ -91,7 +106,7 @@ const Dashboard = () => {
       {
         data.length !== 0 &&
         <GraphContainer>
-          <FlexibleXYPlot yDomain={[30,100]}>
+          <FlexibleXYPlot yDomain={[45,100]}>
             <HorizontalGridLines />
             <XAxis
               attr="x"
@@ -106,7 +121,7 @@ const Dashboard = () => {
               orientation="left"
               title="°F"
             />
-            <LineSeries data={data.map(item => (
+            {/* <LineSeries data={data.map(item => (
               { x: item.time, y: item.outside_temp }))}
               opacity={.75}
               color="pink"
@@ -132,7 +147,7 @@ const Dashboard = () => {
               style={{}}
               curve="curveBasis"
               strokeWidth="3px"
-            />
+            /> */}
           </FlexibleXYPlot>
         </GraphContainer>
       }
