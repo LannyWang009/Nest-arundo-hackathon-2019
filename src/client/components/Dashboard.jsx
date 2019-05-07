@@ -44,16 +44,26 @@ const Dashboard = () => {
   const getData = async () => {
     try{
       const res = await axios.get(`http://localhost:3000/api/thermostat?startDate=${moment(startDate).format('YYYY/MM/DD')}&endDate=${moment(endDate).format('YYYY/MM/DD')}`)
-      
-      let useData = res.data.map(item=>{
+      let useData1 = res.data.map(item=>{
         return {...item, date:item.time.split(' ')[0], time:item.time.split(' ')[1]}
       })
-      console.log('useData', useData)
-      setData(useData)
+      let useData2 = Object.values(useData1.reduce((acc, { date, ...rest }) => {
+        if (acc[date]) {
+          acc[date].data.push({...rest});
+        } else {
+          acc[date] = { date, data: [{ ...rest }] };
+        }
+        return acc;
+      }, {}));
+
+      console.log('useData2', useData2)
+      setData(useData2)
     } catch (err) {
       setData([])
     }
   }
+
+  
 
 
   return (
@@ -100,13 +110,15 @@ const Dashboard = () => {
         data.length === 0 &&
         <GraphContainer>
           <p>Data Not Available</p>
-          <p>Please Pick A Date Between: 11/01/2018 - 03/06/2019</p>
+          <p>Please Pick A Range Between: 11/01/2018 - 03/06/2019</p>
         </GraphContainer>
       }
       {
         data.length !== 0 &&
         <GraphContainer>
-          <FlexibleXYPlot yDomain={[45,100]}>
+          <FlexibleXYPlot yDomain={[45,100]}  colorType="linear"
+                          colorDomain={[0, 9]}
+                          colorRange={['yellow', 'orange']}>
             <HorizontalGridLines />
             <XAxis
               attr="x"
@@ -121,16 +133,18 @@ const Dashboard = () => {
               orientation="left"
               title="°F"
             />
-            {/* <LineSeries data={data.map(item => (
-              { x: item.time, y: item.outside_temp }))}
-              opacity={.75}
-              color="pink"
-              strokeStyle="solid"
-              style={{}}
-              curve="curveBasis"
-              strokeWidth="3px"
+            {data.map((props,index) => (
+              <LineSeries data={props.map( item => (
+                {x:item.data.time, y:item.data.current_temp}
+              ))} 
+              opacity = {0.8}
+              color = {index}
+              key = {index}
+
             />
-            <LineSeries data={data.map(item => (
+            ))}
+            
+            {/* <LineSeries data={data.map(item => (
               { x: item.time, y: item.current_temp }))}
               opacity={.75}
               color="#0182C8"
