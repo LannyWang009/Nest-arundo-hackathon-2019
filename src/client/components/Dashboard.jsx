@@ -55,8 +55,7 @@ const Dashboard = () => {
         }
         return acc;
       }, {}));
-
-      console.log('useData2', useData2)
+      
       setData(useData2)
     } catch (err) {
       setData([])
@@ -95,7 +94,7 @@ const Dashboard = () => {
           </div>
           </div>
         </TitleBoard>
-        <div>
+        {/* <div>
           <DiscreteColorLegend
             items={[
                 {title: 'current temp', color: '#0182C8', strokeWidth:'3px'},
@@ -104,7 +103,7 @@ const Dashboard = () => {
               ]}
             orientation="horizontal"
           />
-        </div>
+        </div> */}
       </TitleContainer>
       {
         data.length === 0 &&
@@ -116,15 +115,18 @@ const Dashboard = () => {
       {
         data.length !== 0 &&
         <GraphContainer>
-          <FlexibleXYPlot yDomain={[45,100]}  colorType="linear"
-                          colorDomain={[0, 9]}
-                          colorRange={['yellow', 'orange']}>
+          <FlexibleXYPlot yDomain={[45,100]} 
+                          xType='time' 
+                          // colorType="linear"
+                          // colorDomain={[0, 9]}
+                          // colorRange={['yellow', 'orange']} 
+                          >
             <HorizontalGridLines />
             <XAxis
               attr="x"
               attrAxis="y"
               orientation="bottom"
-              tickFormat={function tickFormat(d){return `${d}:00`}}
+              // tickFormat={function tickFormat(d){return `${d}:00`}}
               title="local time"
             />
             <YAxis
@@ -133,14 +135,19 @@ const Dashboard = () => {
               orientation="left"
               title="°F"
             />
+            {console.log('data', data)}
             {data.map((props,index) => (
-              <LineSeries data={props.map( item => (
-                {x:item.data.time, y:item.data.current_temp}
+              <LineSeries data={props.data.map( item => (
+                {x:item.time, y:item.current_temp}
               ))} 
-              opacity = {0.8}
-              color = {index}
+              opacity={.75}
               key = {index}
-
+              color={index}
+              strokeStyle="solid"
+              // style={{}}
+              // curve="curveBasis"
+              // strokeWidth="3px"
+          
             />
             ))}
             
